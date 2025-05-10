@@ -1,0 +1,131 @@
+name: ${COMPOSE_PROJECT_NAME}
+
+networks:
+  inception:
+    name: ${COMPOSE_PROJECT_NAME}
+    driver: bridge
+
+services:
+  mariadb:
+    container_name: ${COMPOSE_PROJECT_NAME}_mariadb
+    healthcheck:
+      test: [
+        "CMD",
+        "mariadb-admin",
+        "ping",
+        "-h${MARIADB_HOST}",
+        "-P${MARIADB_PORT}",
+        "-u${MARIADB_USER}",
+        "-p${MARIADB_USER_PASSWORD}",
+        "--silent"
+      ]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+    expose:
+      - ${MARIADB_PORT}
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+    environment:
+      MARIADB_PORT: ${MARIADB_PORT}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_USER_PASSWORD: ${MARIADB_USER_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: on-failure
+
+  wordpress:
+    container_name: ${COMPOSE_PROJECT_NAME}_wordpress
+    expose:
+      - ${WORDPRESS_PORT}
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    environment:
+      LOCAL_USER: ${LOCAL_USER}
+      MARIADB_HOST: ${MARIADB_HOST}
+      MARIADB_PORT: ${MARIADB_PORT}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_USER_PASSWORD: ${MARIADB_USER_PASSWORD}
+      WORDPRESS_DOMAIN: ${WORDPRESS_DOMAIN}
+      WORDPRESS_PORT: ${WORDPRESS_PORT}
+      WORDPRESS_EMAIL: ${WORDPRESS_EMAIL}
+      WORDPRESS_USER: ${WORDPRESS_USER}
+      WORDPRESS_USER_PASSWORD: ${WORDPRESS_USER_PASSWORD}
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: on-failure
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}_nginx
+    expose:
+      - ${NGINX_PORT}
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    environment:
+      NGINX_PORT: ${NGINX_PORT}
+      WORDPRESS_DOMAIN: ${WORDPRESS_DOMAIN}
+      WORDPRESS_HOST: ${WORDPRESS_HOST}
+      WORDPRESS_PORT: ${WORDPRESS_PORT}
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    ports:
+      - ${NGINX_PORT}:${NGINX_PORT}
+    volumes:
+      - wordpress_data:/var/www/html:ro
+    restart: on-failure
+    depends_on:
+      - mariadb
+      - wordpress
+
+  ftp:
+    container_name: ${COMPOSE_PROJECT_NAME}_ftp
+    expose:
+      - ${FTP_PORT}
+    build:
+      context: ./requirements/ftp
+      dockerfile: Dockerfile
+    environment:
+      FTP_PORT: ${FTP_PORT}
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    ports:
+      - ${FTP_PORT}:${FTP_PORT}
+    volumes:
+      - ftp_data:/var/www/html
+    restart: on-failure
+    depends_on:
+      - mariadb
+      - wordpress
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${LOCAL_USER}/data/mariadb
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${LOCAL_USER}/data/wordpress
+      o: bind
+  ftp_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${LOCAL_USER}/data/wordpress
+      o: bind
