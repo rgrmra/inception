@@ -31,11 +31,18 @@ then
 	wp core install \
 		--url="$WORDPRESS_DOMAIN" \
 		--title="$WORDPRESS_TITLE" \
-		--admin_user=$WORDPRESS_USER \
-		--admin_password=$(cat /run/secrets/mariadb_user_password) \
-		--admin_email=$WORDPRESS_EMAIL \
+		--admin_user=$WORDPRESS_ROOT \
+		--admin_password=$(cat /run/secrets/wordpress_root_password) \
+		--admin_email=$WORDPRESS_ROOT_EMAIL \
 		--skip-email \
 		--allow-root;
+
+	wp user create --allow-root \
+		"$WORDPRESS_USER" \
+		"$WORDPRESS_USER_EMAIL" \
+		--user_pass=$(cat /run/secrets/wordpress_user_password) \
+		--role="author" \
+		--path=/var/www/html/wordpress
 
 	wp theme activate twentytwentyfour --allow-root
 
@@ -47,11 +54,6 @@ fi
 #wp option set redis_cache_expiration 300 --allow-root
 
 #wp redis enable --allow-root
-#wp user create --allow-root	\
-#	--path=/var/www/html \
-#	"$USER_NAME" "$USER_EMAIL" \
-#	--user_pass=$USER_PASSWORD \
-#	--role='author'
 
 # Activate the Twenty Twenty-four theme.
 

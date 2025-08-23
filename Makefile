@@ -3,7 +3,7 @@ DOCKER_SHELL		:= /bin/ash
 PROJECT_DIRECTORY	:= ./srcs
 
 ifeq ($(shell find $(PROJECT_DIRECTORY) -name '.env' 2> /dev/null),)
-  $(info .env missing at $(PROJECT_DIRECTORY))
+  $(error .env missing at $(PROJECT_DIRECTORY))
 else
   include $(PROJECT_DIRECTORY)/.env
 endif
@@ -11,12 +11,12 @@ endif
 QUIET				:= > /dev/null 2>&1
 
 DOCKER_COMPOSE		:= $(shell \
-	if docker-compose version $(QUIET); \
-		then \
-		echo 'docker-compose'; \
-	elif docker compose version $(QUIET); \
+	if docker compose version $(QUIET); \
 		then \
 		echo 'docker compose'; \
+	elif docker-compose version $(QUIET); \
+		then \
+		echo 'docker-compose'; \
 	fi) --project-directory $(PROJECT_DIRECTORY)
 
 VOLUMES				:= mariadb wordpress static_site
