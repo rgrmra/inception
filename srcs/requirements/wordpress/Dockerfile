@@ -13,13 +13,17 @@ RUN apk add --no-cache \
     curl \
 	envsubst
 
-RUN mkdir -p /run/wordpress
+RUN mkdir -p /run/wordpress /var/www/html/wordpress
 
-WORKDIR /var/www/html
+WORKDIR /var/www/html/wordpress
+
+RUN addgroup -g 1000 inception
 
 RUN adduser -D -H -s /bin/ash -G www-data www-data
 
-RUN chown -R www-data:www-data ./
+RUN addgroup www-data inception
+
+RUN chown -R www-data:inception ./
 
 RUN curl -O https://wordpress.org/latest.tar.gz \
     && tar -xzvf latest.tar.gz \

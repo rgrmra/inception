@@ -19,20 +19,20 @@ DOCKER_COMPOSE		:= $(shell \
 		echo 'docker compose'; \
 	fi) --project-directory $(PROJECT_DIRECTORY)
 
-VOLUMES				:= mariadb wordpress
+VOLUMES				:= mariadb wordpress static_site
 
 VOLUMES_DIRECTORY	:= $(VOLUMES:%=/home/$(LOCAL_USER)/data/%)
 
 all:
-	@if $(DOCKER_COMPOSE) up --dry-run 2>&1 | grep -E 'Built|Created' $(QUIET); \
-	then \
+	#@if $(DOCKER_COMPOSE) up --dry-run 2>&1 | grep -E 'Built|Created' $(QUIET); \
+	#then \
 		mkdir -p $(VOLUMES_DIRECTORY); \
 		make build --no-print-directory; \
 		make up --no-print-directory; \
-	fi
+	#fi
 
 up:
-	@$(DOCKER_COMPOSE) up -d $(SERVICE)
+	@BUILDKIT=1 $(DOCKER_COMPOSE) up -d $(SERVICE)
 
 stop:
 	@$(DOCKER_COMPOSE) stop $(SERVICE)
@@ -80,4 +80,7 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all up stop start restart down logs build ps shell-% clean fclean re
+prune:
+	docker system prune
+
+.PHONY: all up stop start restart down logs build ps shell-% clean fclean re prune

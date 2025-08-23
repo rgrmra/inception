@@ -6,7 +6,7 @@ if [ ! -f wp-config.php ];
 		--dbhost="$MARIADB_HOST:$MARIADB_PORT" \
 		--dbname="$MARIADB_DATABASE" \
 		--dbuser="$MARIADB_USER" \
-		--dbpass="$MARIADB_USER_PASSWORD" \
+		--dbpass="$(cat /run/secrets/mariadb_user_password)" \
 		--dbprefix="wp_" \
 		--allow-root;
 	do
@@ -32,14 +32,14 @@ then
 		--url="$WORDPRESS_DOMAIN" \
 		--title="$WORDPRESS_TITLE" \
 		--admin_user=$WORDPRESS_USER \
-		--admin_password=$WORDPRESS_USER_PASSWORD \
+		--admin_password=$(cat /run/secrets/mariadb_user_password) \
 		--admin_email=$WORDPRESS_EMAIL \
 		--skip-email \
 		--allow-root;
 
 	wp theme activate twentytwentyfour --allow-root
 
-	chown -R www-data:www-data ./
+	chown -R www-data:inception ./
 fi
 
 #wp plugin install redis-cache --activate --allow-root
