@@ -30,7 +30,8 @@ SERVICES			:= mariadb \
 					   redis \
 					   adminer \
 					   vsftpd \
-					   static_site
+					   static_site \
+					   cadvisor
 
 ifdef SERVICE
 	SERVICES 		:= $(SERVICE)
@@ -73,7 +74,7 @@ shell-%:
 	@if docker ps | grep -w ${COMPOSE_PROJECT_NAME}-$* $(QUIET) \
 		|| docker ps | grep -w ${COMPOSE_PROJECT_NAME}_$* $(QUIET); \
 	then \
-		docker exec -it ${COMPOSE_PROJECT_NAME}_$* $(DOCKER_SHELL); \
+		docker exec -it ${COMPOSE_PROJECT_NAME}-$* $(DOCKER_SHELL); \
 	else \
 		echo "image 'shell-$*' not found"; \
 	fi

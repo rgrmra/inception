@@ -4,23 +4,22 @@ networks:
 
 secrets:
   mariadb_user_password:
-    file: secrets/mariadb_user_password.txt
+    file: ../secrets/mariadb_user_password.txt
 
   mariadb_root_password:
-    file: secrets/mariadb_root_password.txt
+    file: ../secrets/mariadb_root_password.txt
 
   wordpress_user_password:
-    file: secrets/wordpress_user_password.txt
+    file: ../secrets/wordpress_user_password.txt
 
   wordpress_root_password:
-    file: secrets/wordpress_root_password.txt
+    file: ../secrets/wordpress_root_password.txt
 
   vsftpd_password:
-    file: secrets/vsftpd_password.txt
+    file: ../secrets/vsftpd_password.txt
 
 services:
   mariadb:
-    container_name: ${COMPOSE_PROJECT_NAME}_mariadb
     expose:
       - ${MARIADB_PORT}
     healthcheck:
@@ -54,7 +53,6 @@ services:
     restart: on-failure
 
   wordpress:
-    container_name: ${COMPOSE_PROJECT_NAME}_wordpress
     expose:
       - ${WORDPRESS_PORT}
     build:
@@ -86,9 +84,10 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   nginx:
-    container_name: ${COMPOSE_PROJECT_NAME}_nginx
     expose:
       - ${NGINX_PORT}
     build:
@@ -112,11 +111,10 @@ services:
       - wordpress
 
   redis:
-    container_name: ${COMPOSE_PROJECT_NAME}_redis
     expose:
       - ${REDIS_PORT}
     build:
-      context: ./requirements/redis
+      context: ./requirements/bonus/redis
       dockerfile: Dockerfile
       args:
         REDIS_HOST: ${REDIS_HOST}
@@ -128,16 +126,13 @@ services:
     volumes:
       - wordpress_data:/var/www/html/wordpress
     restart: on-failure
-    depends_on:
-      - wordpress
 
   vsftpd:
-    container_name: ${COMPOSE_PROJECT_NAME}_vsftpd
     expose:
       - ${VSFTPD_PORT}
       - ${VSFTPD_PORT_RANGE}
     build:
-      context: ./requirements/vsftpd
+      context: ./requirements/bonus/vsftpd
       dockerfile: Dockerfile
       args:
         SHARED_GROUP: ${SHARED_GROUP}
@@ -158,11 +153,10 @@ services:
       - wordpress
 
   static_site:
-    container_name: ${COMPOSE_PROJECT_NAME}_static_site
     expose:
       - ${STATIC_SITE_PORT}
     build:
-      context: ./requirements/static_site
+      context: ./requirements/bonus/static_site
       dockerfile: Dockerfile
       args:
         STATIC_SITE_PORT: ${STATIC_SITE_PORT}
@@ -173,11 +167,10 @@ services:
     restart: on-failure
 
   adminer:
-    container_name: ${COMPOSE_PROJECT_NAME}_adminer
     expose:
       - ${ADMINER_PORT}
     build:
-      context: ./requirements/adminer
+      context: ./requirements/bonus/adminer
       dockerfile: Dockerfile
       args:
         ADMINER_HOST: ${ADMINER_HOST}
@@ -189,6 +182,32 @@ services:
     restart: on-failure
     depends_on:
       - wordpress
+
+  cadvisor:
+    expose:
+      - 8080
+    build:
+      context: ./requirements/bonus/cadvisor
+      dockerfile: Dockerfile
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    ports:
+      - 9000:8080
+    restart: on-failure
+    depends_on:
+      - mariadb
+      - wordpress
+      - nginx
+      - redis
+      - vsftpd
+      - static_site
+      - adminer
 
 volumes:
   mariadb_data:
