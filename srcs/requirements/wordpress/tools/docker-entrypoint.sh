@@ -14,8 +14,8 @@ if [ ! -f wp-config.php ];
 	done;
 	echo "\$_SERVER['HTTP_HOST'] = '$WORDPRESS_DOMAIN';" >> wp-config.php;
 
-	wp config set WP_REDIS_HOST "redis" --allow-root
-	wp config set WP_REDIS_PORT "6379" --allow-root
+	wp config set WP_REDIS_HOST "$REDIS_HOST" --allow-root
+	wp config set WP_REDIS_PORT "$REDIS_PORT" --allow-root
 	wp config set WP_CACHE true --raw --allow-root
 fi
 

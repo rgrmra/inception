@@ -73,6 +73,7 @@ services:
       WORDPRESS_ROOT: ${WORDPRESS_ROOT}
       WORDPRESS_ROOT_EMAIL: ${WORDPRESS_ROOT_EMAIL}
       REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     secrets:
       - mariadb_user_password
       - wordpress_user_password
@@ -98,6 +99,8 @@ services:
       WORDPRESS_DOMAIN: ${WORDPRESS_DOMAIN}
       WORDPRESS_HOST: ${WORDPRESS_HOST}
       WORDPRESS_PORT: ${WORDPRESS_PORT}
+      ADMINER_HOST: ${ADMINER_HOST}
+      ADMINER_PORT: ${ADMINER_PORT}
     networks:
       - ${COMPOSE_PROJECT_NAME}
     ports:

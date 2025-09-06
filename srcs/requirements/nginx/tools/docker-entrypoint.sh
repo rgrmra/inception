@@ -2,7 +2,7 @@
 
 if ! cat /etc/nginx/nginx.conf | grep -w "${WORDPRESS_DOMAIN}";
 then
-	envsubst '$NGINX_PORT $WORDPRESS_DOMAIN $WORDPRESS_HOST $WORDPRESS_PORT' \
+	envsubst '$NGINX_PORT $WORDPRESS_DOMAIN $WORDPRESS_HOST $WORDPRESS_PORT $ADMINER_HOST $ADMINER_PORT' \
 		< /etc/nginx/nginx.conf.template \
 		> /etc/nginx/nginx.conf;
 fi
