@@ -24,14 +24,13 @@ http {
 		    fastcgi_index index.php;
 		    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
 		}
-	}
 
-	server {
-		listen 8080;
-		listen [::]:8080;
-		server_name localhost;
+		location ^~ /adminer {
+		    include fastcgi_params;
+		    fastcgi_pass adminer:9000;
+		    fastcgi_index index.php;
+		    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		}
 
-		index index.html;
-		root /var/www/html/static_site;
 	}
 }

@@ -1,13 +1,11 @@
 FROM alpine:latest
 
-# Cria o diretório do site
-RUN mkdir -p /static_site
+RUN apk add nodejs npm
 
-# Copia os arquivos do site
-COPY . /static_site
+COPY ./tools /home/app
 
-# Define o diretório de trabalho
-WORKDIR /static_site
+WORKDIR /home/app
 
-# Não expõe nenhuma porta ou executa comandos — é só para armazenamento
+RUN npm init -y && npm install express -y
 
+CMD ["node", "server.js"]

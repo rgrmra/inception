@@ -22,6 +22,6 @@ RUN addgroup ftpuser ${SHARED_GROUP}
 
 WORKDIR /home/ftpuser/ftp
 
-COPY vsftpd.conf /etc/vsftpd/vsftpd.conf
+COPY ./conf/vsftpd.conf.template /etc/vsftpd/vsftpd.conf
 
 CMD ["/usr/sbin/vsftpd", "/etc/vsftpd/vsftpd.conf"]

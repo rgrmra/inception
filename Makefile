@@ -19,49 +19,67 @@ DOCKER_COMPOSE		:= $(shell \
 		echo 'docker-compose'; \
 	fi) --project-directory $(PROJECT_DIRECTORY)
 
-VOLUMES				:= mariadb wordpress static_site
+VOLUMES				:= mariadb \
+					   wordpress
 
 VOLUMES_DIRECTORY	:= $(VOLUMES:%=/home/$(LOCAL_USER)/data/%)
 
+SERVICES			:= mariadb \
+					   wordpress \
+					   nginx \
+					   redis \
+					   adminer \
+					   vsftpd \
+					   static_site
+
+ifdef SERVICE
+	SERVICES 		:= $(SERVICE)
+endif
+
 all:
-	#@if $(DOCKER_COMPOSE) up --dry-run 2>&1 | grep -E 'Built|Created' $(QUIET); \
-	#then \
+	@echo $(SERVICES)
+	@if $(DOCKER_COMPOSE) up $(SERVICES) --dry-run 2>&1 \
+		| grep -E 'Built|Created' $(QUIET); \
+	then \
 		mkdir -p $(VOLUMES_DIRECTORY); \
-		make build --no-print-directory; \
-		make up --no-print-directory; \
-	#fi
+		make up SERVICES="$(SERVICES)" --no-print-directory; \
+	fi
 
 up:
-	@BUILDKIT=1 $(DOCKER_COMPOSE) up -d $(SERVICE)
+	@BUILDKIT=1 $(DOCKER_COMPOSE) up -d $(SERVICES)
 
 stop:
-	@$(DOCKER_COMPOSE) stop $(SERVICE)
+	@$(DOCKER_COMPOSE) stop $(SERVICES)
 
 start:
-	@$(DOCKER_COMPOSE) start $(SERVICE)
+	@$(DOCKER_COMPOSE) start $(SERVICES)
 
 restart:
-	@$(DOCKER_COMPOSE) restart $(SERVICE)
+	@$(DOCKER_COMPOSE) restart $(SERVICES)
 
 down:
-	@$(DOCKER_COMPOSE) down $(SERVICE)
+	@$(DOCKER_COMPOSE) down $(SERVICES)
 
 logs:
-	@$(DOCKER_COMPOSE) logs --follow $(SERVICE)
+	@$(DOCKER_COMPOSE) logs --follow $(SERVICES)
 
 build:
-	@$(DOCKER_COMPOSE) build #--no-cache $(SERVICE)
+	@$(DOCKER_COMPOSE) build --no-cache $(SERVICES)
 
 ps:
-	@$(DOCKER_COMPOSE) ps --all
+	@$(DOCKER_COMPOSE) ps --all $(SERVICES)
 
 shell-%:
-	@if docker ps | grep -w ${COMPOSE_PROJECT_NAME}-$* $(QUIET); \
+	@if docker ps | grep -w ${COMPOSE_PROJECT_NAME}-$* $(QUIET) \
+		|| docker ps | grep -w ${COMPOSE_PROJECT_NAME}_$* $(QUIET); \
 	then \
 		docker exec -it ${COMPOSE_PROJECT_NAME}_$* $(DOCKER_SHELL); \
 	else \
 		echo "image 'shell-$*' not found"; \
 	fi
+
+bonus:
+	@make all BONUS=true --no-print-directory;
 
 clean:
 	@if docker image ls | grep $(COMPOSE_PROJECT_NAME) $(QUIET); \
@@ -83,4 +101,4 @@ re: fclean all
 prune:
 	docker system prune
 
-.PHONY: all up stop start restart down logs build ps shell-% clean fclean re prune
+.PHONY: all up stop start restart down logs build ps shell-% bonus clean fclean re prune

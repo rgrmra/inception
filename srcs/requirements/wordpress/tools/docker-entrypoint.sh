@@ -13,11 +13,11 @@ if [ ! -f wp-config.php ];
 		sleep 5;
 	done;
 	echo "\$_SERVER['HTTP_HOST'] = '$WORDPRESS_DOMAIN';" >> wp-config.php;
-fi
 
-#wp config set WP_REDIS_HOST "redis" --allow-root
-#wp config set WP_REDIS_PORT 6379 --raw --allow-root
-#wp config set WP_CACHE true --raw --allow-root
+	wp config set WP_REDIS_HOST "redis" --allow-root
+	wp config set WP_REDIS_PORT "6379" --allow-root
+	wp config set WP_CACHE true --raw --allow-root
+fi
 
 if [ ! -f /etc/php83/php-fpm.d/www/conf ]; then
 envsubst '$WORDPRESS_PORT' \
@@ -46,16 +46,14 @@ then
 
 	wp theme activate twentytwentyfour --allow-root
 
+	wp plugin install redis-cache --activate --allow-root
+
+	wp option set redis_cache_expiration 300 --allow-root
+
+	wp redis enable --allow-root
+
 	chown -R www-data:inception ./
 fi
-
-#wp plugin install redis-cache --activate --allow-root
-
-#wp option set redis_cache_expiration 300 --allow-root
-
-#wp redis enable --allow-root
-
-# Activate the Twenty Twenty-four theme.
 
 echo "wordpress is alive"
 

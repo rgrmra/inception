@@ -15,7 +15,7 @@ COPY ./conf/mariadb-server.cnf.template /etc/my.cnf.d/
 
 RUN mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 
-COPY docker-entrypoint.sh /run/mariadb/entrypoint.sh
+COPY ./tools/docker-entrypoint.sh /run/mariadb/entrypoint.sh
 
 RUN chmod +x /run/mariadb/entrypoint.sh
 

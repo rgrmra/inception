@@ -10,6 +10,7 @@ RUN apk add --no-cache \
     php83-mbstring \
     php83-opcache \
 	php83-phar \
+	php83-pecl-redis \
     curl \
 	envsubst
 
@@ -39,7 +40,7 @@ RUN mv wp-cli.phar /bin/wp
 
 COPY ./conf/www.conf.template /etc/php83/php-fpm.d/
 
-COPY docker-entrypoint.sh /run/wordpress/entrypoint.sh
+COPY ./tools/docker-entrypoint.sh /run/wordpress/entrypoint.sh
 
 RUN chmod +x /run/wordpress/entrypoint.sh
 

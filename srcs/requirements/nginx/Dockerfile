@@ -14,7 +14,7 @@ WORKDIR /run/nginx
 
 COPY ./conf/nginx.conf.template /etc/nginx/
 
-COPY ./docker-entrypoint.sh /run/nginx/entrypoint.sh
+COPY ./tools/docker-entrypoint.sh /run/nginx/entrypoint.sh
 
 RUN chmod +x /run/nginx/entrypoint.sh
 

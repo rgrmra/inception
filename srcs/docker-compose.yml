@@ -1,19 +1,22 @@
 networks:
   inception:
     name: ${COMPOSE_PROJECT_NAME}
-    #    driver: bridge
 
 secrets:
   mariadb_user_password:
     file: secrets/mariadb_user_password.txt
+
   mariadb_root_password:
     file: secrets/mariadb_root_password.txt
+
   wordpress_user_password:
     file: secrets/wordpress_user_password.txt
+
   wordpress_root_password:
     file: secrets/wordpress_root_password.txt
-    #  vsftpd_password:
-    #    file: secrets/vsftpd_password.txt
+
+  vsftpd_password:
+    file: secrets/vsftpd_password.txt
 
 services:
   mariadb:
@@ -69,6 +72,7 @@ services:
       WORDPRESS_USER_EMAIL: ${WORDPRESS_USER_EMAIL}
       WORDPRESS_ROOT: ${WORDPRESS_ROOT}
       WORDPRESS_ROOT_EMAIL: ${WORDPRESS_ROOT_EMAIL}
+      REDIS_HOST: ${REDIS_HOST}
     secrets:
       - mariadb_user_password
       - wordpress_user_password
@@ -104,53 +108,84 @@ services:
     depends_on:
       - wordpress
 
-#  vsftpd:
-#    container_name: ${COMPOSE_PROJECT_NAME}_vsftpd
-#    expose:
-#      - ${VSFTPD_PORT}
-#      - ${VSFTPD_PORT_RANGE}
-#    build:
-#      context: ./requirements/vsftpd
-#      dockerfile: Dockerfile
-#      args:
-#        SHARED_GROUP: ${SHARED_GROUP}
-#    environment:
-#      VSFTPD_PORT: ${VSFTPD_PORT}
-#      VSFTPD_USER: ${VSFTPD_USER}
-#      VSFTPD_PASSWORD: ${VSFTPD_PASSWORD}
-##    networks:
-##      - ${COMPOSE_PROJECT_NAME}
-#    ports:
-#      - ${VSFTPD_PORT}:${VSFTPD_PORT}
-#      - ${VSFTPD_PORT_RANGE}:${VSFTPD_PORT_RANGE}
-#    volumes:
-#      - wordpress_data:/home/${VSFTPD_USER}/vsftpd/wordpress
-#      - static_site_data:/home/${VSFTPD_USER}/vsftpd/static_site
-#    restart: on-failure
-#    depends_on:
-#      - wordpress
+  redis:
+    container_name: ${COMPOSE_PROJECT_NAME}_redis
+    expose:
+      - ${REDIS_PORT}
+    build:
+      context: ./requirements/redis
+      dockerfile: Dockerfile
+      args:
+        REDIS_HOST: ${REDIS_HOST}
+        REDIS_PORT: ${REDIS_PORT}
+    networks:
+        - ${COMPOSE_PROJECT_NAME}
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    volumes:
+      - wordpress_data:/var/www/html/wordpress
+    restart: on-failure
+    depends_on:
+      - wordpress
 
-#  adminer:
-#    container_name: ${COMPOSE_PROJECT_NAME}_adminer
-#    build:
-#      context: ./requirements/adminer
-#      dockerfile: Dockerfile
-##    networks:
-##      - ${COMPOSE_PROJECT_NAME}
-#    volumes:
-#      - wordpress_data:/var/www/html
-#    restart: on-failure
-#    depends_on:
-#      - wordpress
-#
-#  static_site:
-#    container_name: ${COMPOSE_PROJECT_NAME}_static_site
-#    build:
-#      context: ./requirements/static_site
-#      dockerfile: Dockerfile
-#    volumes:
-#      - static_site_data:/static_site
-#    restart: on-failure
+  vsftpd:
+    container_name: ${COMPOSE_PROJECT_NAME}_vsftpd
+    expose:
+      - ${VSFTPD_PORT}
+      - ${VSFTPD_PORT_RANGE}
+    build:
+      context: ./requirements/vsftpd
+      dockerfile: Dockerfile
+      args:
+        SHARED_GROUP: ${SHARED_GROUP}
+    environment:
+      VSFTPD_PORT: ${VSFTPD_PORT}
+      VSFTPD_USER: ${VSFTPD_USER}
+    secrets:
+      - vsftpd_password
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    ports:
+      - ${VSFTPD_PORT}:${VSFTPD_PORT}
+      - ${VSFTPD_PORT_RANGE}:${VSFTPD_PORT_RANGE}
+    volumes:
+      - wordpress_data:/home/${VSFTPD_USER}/vsftpd/wordpress
+    restart: on-failure
+    depends_on:
+      - wordpress
+
+  static_site:
+    container_name: ${COMPOSE_PROJECT_NAME}_static_site
+    expose:
+      - ${STATIC_SITE_PORT}
+    build:
+      context: ./requirements/static_site
+      dockerfile: Dockerfile
+      args:
+        STATIC_SITE_PORT: ${STATIC_SITE_PORT}
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    ports:
+      - ${STATIC_SITE_PORT}:${STATIC_SITE_PORT}
+    restart: on-failure
+
+  adminer:
+    container_name: ${COMPOSE_PROJECT_NAME}_adminer
+    expose:
+      - ${ADMINER_PORT}
+    build:
+      context: ./requirements/adminer
+      dockerfile: Dockerfile
+      args:
+        ADMINER_HOST: ${ADMINER_HOST}
+        ADMINER_PORT: ${ADMINER_PORT}
+    networks:
+      - ${COMPOSE_PROJECT_NAME}
+    volumes:
+      - wordpress_data:/var/www/html/wordpress
+    restart: on-failure
+    depends_on:
+      - wordpress
 
 volumes:
   mariadb_data:
@@ -159,15 +194,10 @@ volumes:
       type: none
       device: /home/${LOCAL_USER}/data/mariadb
       o: bind
+
   wordpress_data:
     driver: local
     driver_opts:
       type: none
       device: /home/${LOCAL_USER}/data/wordpress
       o: bind
-#  static_site_data:
-#    driver: local
-#    driver_opts:
-#      type: none
-#      device: /home/${LOCAL_USER}/data/static_site
-#      o: bind
