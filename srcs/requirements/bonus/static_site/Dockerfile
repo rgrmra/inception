@@ -1,10 +1,12 @@
 FROM alpine:3.22.1
 
-RUN apk update && apk add nodejs npm
+RUN apk add --no-cache \
+    nodejs \
+    npm
 
-COPY ./tools /home/app
+WORKDIR /run/static_site
 
-WORKDIR /home/app
+COPY ./tools .
 
 RUN npm init -y && npm install express -y
 

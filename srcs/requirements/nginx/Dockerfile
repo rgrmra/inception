@@ -1,16 +1,14 @@
 FROM alpine:3.22.1
 
-RUN apk update
-
-RUN apk add --no-cache nginx openssl envsubst
-
-RUN mkdir -p /run/nginx /etc/nginx/ssl /var/www/html/wordpress /var/www/html/static_site
-
-RUN addgroup -g 1000 inception
-
-RUN addgroup nginx inception
+RUN apk add --no-cache \
+    nginx \
+    openssl \
+    envsubst
 
 WORKDIR /run/nginx
+
+RUN addgroup -g 1000 inception \
+    && addgroup nginx inception
 
 COPY ./conf/nginx.conf.template /etc/nginx/
 

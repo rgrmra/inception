@@ -20,6 +20,7 @@ secrets:
 
 services:
   mariadb:
+    container_name: ${COMPOSE_PROJECT_NAME}-mariadb
     expose:
       - ${MARIADB_PORT}
     healthcheck:
@@ -32,9 +33,10 @@ services:
         -p$$(cat /run/secrets/mariadb_user_password) \
         --silent"
       ]
-      interval: 5s
-      timeout: 30s
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 5s
     build:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
@@ -53,6 +55,7 @@ services:
     restart: on-failure
 
   wordpress:
+    container_name: ${COMPOSE_PROJECT_NAME}-wordpress
     expose:
       - ${WORDPRESS_PORT}
     build:
@@ -85,9 +88,10 @@ services:
       mariadb:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
 
   nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}-nginx
     expose:
       - ${NGINX_PORT}
     build:
@@ -103,14 +107,18 @@ services:
     networks:
       - ${COMPOSE_PROJECT_NAME}
     ports:
-     - ${NGINX_PORT}:${NGINX_PORT}
+      - ${NGINX_PORT}:${NGINX_PORT}
     volumes:
       - wordpress_data:/var/www/html/wordpress:ro
     restart: on-failure
     depends_on:
-      - wordpress
+      wordpress:
+        condition: service_started
+      static_site:
+        condition: service_started
 
   redis:
+    container_name: ${COMPOSE_PROJECT_NAME}
     expose:
       - ${REDIS_PORT}
     build:
@@ -119,15 +127,20 @@ services:
       args:
         REDIS_HOST: ${REDIS_HOST}
         REDIS_PORT: ${REDIS_PORT}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
     networks:
         - ${COMPOSE_PROJECT_NAME}
-    ports:
-      - ${REDIS_PORT}:${REDIS_PORT}
     volumes:
       - wordpress_data:/var/www/html/wordpress
     restart: on-failure
 
   vsftpd:
+    container_name: ${COMPOSE_PROJECT_NAME}-vsftpd
     expose:
       - ${VSFTPD_PORT}
       - ${VSFTPD_PORT_RANGE}
@@ -135,10 +148,11 @@ services:
       context: ./requirements/bonus/vsftpd
       dockerfile: Dockerfile
       args:
-        SHARED_GROUP: ${SHARED_GROUP}
+        VSFTPD_USER: ${VSFTPD_USER}
     environment:
       VSFTPD_PORT: ${VSFTPD_PORT}
       VSFTPD_USER: ${VSFTPD_USER}
+      VSFTPD_PORT_RANGE: ${VSFTPD_PORT_RANGE}
     secrets:
       - vsftpd_password
     networks:
@@ -153,6 +167,7 @@ services:
       - wordpress
 
   static_site:
+    container_name: ${COMPOSE_PROJECT_NAME}-static_site
     expose:
       - ${STATIC_SITE_PORT}
     build:
@@ -167,6 +182,7 @@ services:
     restart: on-failure
 
   adminer:
+    container_name: ${COMPOSE_PROJECT_NAME}-adminer
     expose:
       - ${ADMINER_PORT}
     build:
@@ -184,6 +200,7 @@ services:
       - wordpress
 
   cadvisor:
+    container_name: cadvisor
     expose:
       - 8080
     build:

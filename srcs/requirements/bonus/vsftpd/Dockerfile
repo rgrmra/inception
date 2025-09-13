@@ -1,27 +1,23 @@
 FROM alpine:3.22.1
 
-ARG SHARED_GROUP=inception
+ARG VSFTPD_USER
 
-RUN apk update && apk add --no-cache vsftpd envsubst
+RUN apk add --no-cache \
+    vsftpd \
+    envsubst
 
-RUN addgroup -g 1000 ${SHARED_GROUP}
+RUN addgroup -g 1000 inception \
+    && adduser -D -H ${VSFTPD_USER} \
+    && addgroup ${VSFTPD_USER} inception
 
 RUN echo "/sbin/nologin" >> /etc/shells
 
-RUN mkdir -p /var/run/vsftpd/empty && \
-    mkdir -p /home/ftpuser/vsftpd/wordpress && \
-	mkdir -p /homr/ftpuser/vsftpd/static_site && \
-    adduser -D -h /home/ftpuser/ftp ftpuser && \
-    echo "ftpuser:ftppassword" | chpasswd && \
-    echo "ftpuser" > /etc/vsftpd/vsftpd.userlist && \
-    chown -R ftpuser:${SHARED_GROUP} /home/ftpuser/ftp
+WORKDIR /run/vsftpd
 
-RUN chmod -R 755 /home/ftpuser
+COPY ./conf/vsftpd.conf.template /etc/vsftpd
 
-RUN addgroup ftpuser ${SHARED_GROUP}
+COPY ./tools/docker-entrypoint.sh ./entrypoint.sh
 
-WORKDIR /home/ftpuser/ftp
+RUN chmod +x /run/vsftpd/entrypoint.sh
 
-COPY ./conf/vsftpd.conf.template /etc/vsftpd/vsftpd.conf
-
-CMD ["/usr/sbin/vsftpd", "/etc/vsftpd/vsftpd.conf"]
+CMD ["/run/vsftpd/entrypoint.sh"]

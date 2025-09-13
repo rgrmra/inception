@@ -9,34 +9,26 @@ RUN apk add --no-cache \
     php83-zlib \
     php83-mbstring \
     php83-opcache \
-	php83-phar \
-	php83-pecl-redis \
-    curl \
-	envsubst
-
-RUN mkdir -p /run/wordpress /var/www/html/wordpress
+    php83-phar \
+    php83-pecl-redis \
+    php83-tokenizer \
+    php83-ctype \
+    envsubst \
+    wget
 
 WORKDIR /var/www/html/wordpress
 
-RUN addgroup -g 1000 inception
+RUN addgroup -g 1000 inception \
+    && adduser -D -H -s /bin/ash -G www-data www-data \
+    && addgroup www-data inception \
+    && chown -R www-data:inception ./
 
-RUN adduser -D -H -s /bin/ash -G www-data www-data
+RUN wget https://wordpress.org/latest.tar.gz \
+    && tar -xzf latest.tar.gz -C /var/www/html/
 
-RUN addgroup www-data inception
-
-RUN chown -R www-data:inception ./
-
-RUN curl -O https://wordpress.org/latest.tar.gz \
-    && tar -xzvf latest.tar.gz \
-    && rm latest.tar.gz \
-    && cp -R wordpress/* . \
-    && rm -rf wordpress
-
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-
-RUN chmod +x wp-cli.phar
-
-RUN mv wp-cli.phar /bin/wp
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O wp-cli \
+    && chmod +x wp-cli \
+    && mv wp-cli /bin
 
 COPY ./conf/www.conf.template /etc/php83/php-fpm.d/
 

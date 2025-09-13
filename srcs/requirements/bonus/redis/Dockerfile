@@ -1,15 +1,14 @@
 FROM alpine:3.22.1
 
-RUN apk update && apk add redis
-
-COPY ./conf/redis.conf.template /etc/redis.conf
+RUN apk add --no-cache \
+    redis
 
 WORKDIR /run/redis
+
+COPY ./conf/redis.conf.template /etc
 
 COPY ./tools/docker-entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x ./entrypoint.sh
 
-EXPOSE 6379
-
-ENTRYPOINT ["/run/redis/entrypoint.sh"]
+CMD ["/run/redis/entrypoint.sh"]

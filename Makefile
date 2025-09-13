@@ -38,13 +38,8 @@ ifdef SERVICE
 endif
 
 all:
-	#@echo $(SERVICES)
-	#@if $(DOCKER_COMPOSE) up $(SERVICES) --dry-run 2>&1 \
-	#	| grep -E 'Built|Created' $(QUIET); \
-	#then \
-		mkdir -p $(VOLUMES_DIRECTORY); \
-		make up SERVICES="$(SERVICES)" --no-print-directory; \
-	#fi
+	@mkdir -p $(VOLUMES_DIRECTORY)
+	@make up SERVICES="$(SERVICES)" --no-print-directory
 
 up:
 	@BUILDKIT=1 $(DOCKER_COMPOSE) up -d $(SERVICES)

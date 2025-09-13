@@ -14,8 +14,8 @@ chroot_local_user=YES
 allow_writeable_chroot=YES
 secure_chroot_dir=/var/run/vsftpd/empty
 
-user_sub_token=ftpuser
-local_root=/home/ftpuser/vsftpd
+user_sub_token=${VSFTPD_USER}
+local_root=/home/${VSFTPD_USER}/vsftpd
 
 pasv_enable=YES
 pasv_min_port=21100

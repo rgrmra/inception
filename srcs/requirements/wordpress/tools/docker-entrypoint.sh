@@ -1,8 +1,8 @@
 #!/bin/ash
 
 if [ ! -f wp-config.php ];
-	then
-	until wp config create \
+then
+	until wp-cli config create \
 		--dbhost="$MARIADB_HOST:$MARIADB_PORT" \
 		--dbname="$MARIADB_DATABASE" \
 		--dbuser="$MARIADB_USER" \
@@ -12,23 +12,22 @@ if [ ! -f wp-config.php ];
 	do
 		sleep 5;
 	done;
-	echo "\$_SERVER['HTTP_HOST'] = '$WORDPRESS_DOMAIN';" >> wp-config.php;
 
-	wp config set WP_REDIS_HOST "$REDIS_HOST" --allow-root
-	wp config set WP_REDIS_PORT "$REDIS_PORT" --allow-root
-	wp config set WP_CACHE true --raw --allow-root
+	sed -i "/^<?php$/a \
+		\$_SERVER['HTTP_HOST'] = '${WORDPRESS_DOMAIN}';" wp-config.php
 fi
 
-if [ ! -f /etc/php83/php-fpm.d/www/conf ]; then
-envsubst '$WORDPRESS_PORT' \
+if [ ! -f /etc/php83/php-fpm.d/www/conf ];
+then
+	envsubst '$WORDPRESS_PORT' \
 	< /etc/php83/php-fpm.d/www.conf.template \
 	> /etc/php83/php-fpm.d/www.conf;
 fi
 
-if ! wp core is-installed --allow-root;
+if ! wp-cli core is-installed --allow-root;
 then
 
-	wp core install \
+	wp-cli core install \
 		--url="$WORDPRESS_DOMAIN" \
 		--title="$WORDPRESS_TITLE" \
 		--admin_user=$WORDPRESS_ROOT \
@@ -37,20 +36,24 @@ then
 		--skip-email \
 		--allow-root;
 
-	wp user create --allow-root \
+	wp-cli user create --allow-root \
 		"$WORDPRESS_USER" \
 		"$WORDPRESS_USER_EMAIL" \
 		--user_pass=$(cat /run/secrets/wordpress_user_password) \
 		--role="author" \
 		--path=/var/www/html/wordpress
 
-	wp theme activate twentytwentyfour --allow-root
+	wp-cli theme activate twentytwentyfour --allow-root
 
-	wp plugin install redis-cache --activate --allow-root
+	wp-cli plugin install redis-cache --activate --allow-root
 
-	wp option set redis_cache_expiration 300 --allow-root
+	wp-cli config set WP_REDIS_HOST "$REDIS_HOST" --allow-root;
+	wp-cli config set WP_REDIS_PORT "$REDIS_PORT" --allow-root;
+	wp-cli config set WP_CACHE true --raw --allow-root;
 
-	wp redis enable --allow-root
+	wp-cli option set redis_cache_expiration 300 --allow-root
+
+	wp-cli redis enable --allow-root
 
 	chown -R www-data:inception ./
 fi

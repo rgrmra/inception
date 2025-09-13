@@ -2,7 +2,12 @@
 
 if ! cat /etc/nginx/nginx.conf | grep -w "${WORDPRESS_DOMAIN}";
 then
-	envsubst '$NGINX_PORT $WORDPRESS_DOMAIN $WORDPRESS_HOST $WORDPRESS_PORT $ADMINER_HOST $ADMINER_PORT' \
+	envsubst '$NGINX_PORT \
+		$WORDPRESS_DOMAIN \
+		$WORDPRESS_HOST \
+		$WORDPRESS_PORT \
+		$ADMINER_HOST \
+		$ADMINER_PORT' \
 		< /etc/nginx/nginx.conf.template \
 		> /etc/nginx/nginx.conf;
 fi
@@ -10,6 +15,7 @@ fi
 if [ ! -f /etc/nginx/ssl/${WORDPRESS_DOMAIN}.crt ] \
 	|| [ ! -f /etc/nginx/ssl/${WORDPRESS_DOMAIN}.key ];
 then
+	mkdir -p /etc/nginx/ssl; \
 	openssl req -x509 \
 		-newkey rsa:4096 \
 		-keyout /etc/nginx/ssl/${WORDPRESS_DOMAIN}.key \

@@ -22,6 +22,4 @@ fi
 
 kill $pid
 
-rm -rf /run/secrets
-
 exec mariadbd --user=mysql --datadir=/var/lib/mysql
