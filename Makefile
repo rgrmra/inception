@@ -33,34 +33,6 @@ SERVICES			:= mariadb \
 					   static_site \
 					   cadvisor
 
-REQUIRED_ENVS				:= COMPOSE_PROJECT_NAME \
-					   LOCAL_USER \
-					   SHARED_GROUP \
-					   MARIADB_HOST \
-					   MARIADB_PORT \
-					   MARIADB_DATABASE \
-					   MARIADB_USER \
-					   WORDPRESS_HOST \
-					   WORDPRESS_PORT \
-					   WORDPRESS_DOMAIN \
-					   WORDPRESS_USER \
-					   WORDPRESS_USER_EMAIL \
-					   WORDPRESS_ROOT \
-					   WORDPRESS_ROOT_EMAIL \
-					   NGINX_HOST \
-					   NGINX_PORT \
-					   REDIS_HOST \
-					   REDIS_PORT \
-					   VSFTPD_HOST \
-					   VSFTPD_PORT \
-					   VSFTPD_PORT_RANGE \
-					   VSFTPD_USER \
-					   STATIC_SITE_PORT \
-					   ADMINER_HOST \
-					   ADMINER_PORT \
-					   CADVISOR_HOST \
-					   CADVISOR_PORT \
-
 ifdef SERVICE
 	SERVICES 		:= $(SERVICE)
 endif
@@ -105,7 +77,8 @@ clean:
 	@if docker image ls | grep $(COMPOSE_PROJECT_NAME) $(QUIET); \
 	then \
 		$(DOCKER_COMPOSE) down --timeout 1 --rmi local; \
-	elif docker network ls | grep $(COMPOSE_PROJECT_NAME) $(QUIET); \
+	fi
+	@if docker network ls | grep $(COMPOSE_PROJECT_NAME) $(QUIET); \
 	then \
 		$(DOCKER_COMPOSE) down --timeout 1 --rmi local; \
 	fi
@@ -119,6 +92,6 @@ fclean: clean
 re: fclean all
 
 prune:
-	docker system prune
+	@docker system prune
 
 .PHONY: all up stop start restart down logs build ps shell-% clean fclean re prune

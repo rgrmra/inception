@@ -174,8 +174,6 @@ services:
     build:
       context: ./requirements/bonus/static_site
       dockerfile: Dockerfile
-      args:
-        STATIC_SITE_PORT: ${STATIC_SITE_PORT}
     environment:
       STATIC_SITE_PORT: ${STATIC_SITE_PORT}
     networks:
