@@ -2,7 +2,7 @@
 
 if [ -f /etc/vsftpd/vsftpd.conf.template ];
 then
-	envsubst '${VSFTPD_USER}' \
+	envsubst '${VSFTPD_USER} ${VSFTPD_PORT_START_RANGE} ${VSFTPD_PORT_END_RANGE}' \
 		< /etc/vsftpd/vsftpd.conf.template \
 		> /etc/vsftpd/vsftpd.conf;
 

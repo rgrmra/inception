@@ -18,8 +18,8 @@ user_sub_token=${VSFTPD_USER}
 local_root=/home/${VSFTPD_USER}/vsftpd
 
 pasv_enable=YES
-pasv_min_port=21100
-pasv_max_port=21110
+pasv_min_port=${VSFTPD_PORT_START_RANGE}
+pasv_max_port=${VSFTPD_PORT_END_RANGE}
 pasv_address=127.0.0.1
 
 userlist_enable=YES

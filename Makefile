@@ -101,9 +101,6 @@ shell-%:
 		echo "image 'shell-$*' not found"; \
 	fi
 
-bonus:
-	@make all BONUS=true --no-print-directory;
-
 clean:
 	@if docker image ls | grep $(COMPOSE_PROJECT_NAME) $(QUIET); \
 	then \
@@ -124,17 +121,4 @@ re: fclean all
 prune:
 	docker system prune
 
-env:
-	@FILE="";\
-	for ENV in $(REQUIRED_ENVS); do \
-		VALUE=`grep "^$$ENV=" $(PROJECT_DIRECTORY)/.env | cut -d '=' -f2-`; \
-		FILE="$$FILE$$ENV=$$VALUE\n"; \
-		if [[ $$VALUE ]]; then \
-			echo "$(shell tput setaf 2)$$ENV=$$VALUE$(shell tput sgr0)"; \
-		else \
-			echo "$(shell tput setaf 1)$$ENV=$(shell tput sgr0)"; \
-		fi; \
-	done; \
-	echo -e $$FILE > teste
-
-.PHONY: all up stop start restart down logs build ps shell-% bonus clean fclean re prune
+.PHONY: all up stop start restart down logs build ps shell-% clean fclean re prune

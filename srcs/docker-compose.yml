@@ -143,7 +143,7 @@ services:
     container_name: vsftpd
     expose:
       - ${VSFTPD_PORT}
-      - ${VSFTPD_PORT_RANGE}
+      - ${VSFTPD_PORT_START_RANGE}-${VSFTPD_PORT_END_RANGE}
     build:
       context: ./requirements/bonus/vsftpd
       dockerfile: Dockerfile
@@ -152,14 +152,15 @@ services:
     environment:
       VSFTPD_PORT: ${VSFTPD_PORT}
       VSFTPD_USER: ${VSFTPD_USER}
-      VSFTPD_PORT_RANGE: ${VSFTPD_PORT_RANGE}
+      VSFTPD_PORT_START_RANGE: ${VSFTPD_PORT_START_RANGE}
+      VSFTPD_PORT_END_RANGE: ${VSFTPD_PORT_END_RANGE}
     secrets:
       - vsftpd_password
     networks:
       - ${COMPOSE_PROJECT_NAME}
     ports:
       - ${VSFTPD_PORT}:${VSFTPD_PORT}
-      - ${VSFTPD_PORT_RANGE}:${VSFTPD_PORT_RANGE}
+      - ${VSFTPD_PORT_START_RANGE}-${VSFTPD_PORT_END_RANGE}:${VSFTPD_PORT_START_RANGE}-${VSFTPD_PORT_END_RANGE}
     volumes:
       - wordpress_data:/home/${VSFTPD_USER}/vsftpd/wordpress
     restart: on-failure
