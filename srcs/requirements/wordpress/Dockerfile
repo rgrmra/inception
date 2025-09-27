@@ -1,4 +1,4 @@
-FROM alpine:3.22.1
+FROM alpine:3.21.4
 
 RUN apk add --no-cache \
     php83 \

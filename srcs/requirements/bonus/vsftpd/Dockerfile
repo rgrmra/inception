@@ -1,4 +1,4 @@
-FROM alpine:3.22.1
+FROM alpine:3.21.4
 
 ARG VSFTPD_USER
 

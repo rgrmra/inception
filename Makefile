@@ -33,6 +33,34 @@ SERVICES			:= mariadb \
 					   static_site \
 					   cadvisor
 
+REQUIRED_ENVS				:= COMPOSE_PROJECT_NAME \
+					   LOCAL_USER \
+					   SHARED_GROUP \
+					   MARIADB_HOST \
+					   MARIADB_PORT \
+					   MARIADB_DATABASE \
+					   MARIADB_USER \
+					   WORDPRESS_HOST \
+					   WORDPRESS_PORT \
+					   WORDPRESS_DOMAIN \
+					   WORDPRESS_USER \
+					   WORDPRESS_USER_EMAIL \
+					   WORDPRESS_ROOT \
+					   WORDPRESS_ROOT_EMAIL \
+					   NGINX_HOST \
+					   NGINX_PORT \
+					   REDIS_HOST \
+					   REDIS_PORT \
+					   VSFTPD_HOST \
+					   VSFTPD_PORT \
+					   VSFTPD_PORT_RANGE \
+					   VSFTPD_USER \
+					   STATIC_SITE_PORT \
+					   ADMINER_HOST \
+					   ADMINER_PORT \
+					   CADVISOR_HOST \
+					   CADVISOR_PORT \
+
 ifdef SERVICE
 	SERVICES 		:= $(SERVICE)
 endif
@@ -66,10 +94,9 @@ ps:
 	@$(DOCKER_COMPOSE) ps --all $(SERVICES)
 
 shell-%:
-	@if docker ps | grep -w ${COMPOSE_PROJECT_NAME}-$* $(QUIET) \
-		|| docker ps | grep -w ${COMPOSE_PROJECT_NAME}_$* $(QUIET); \
+	@if docker ps | grep -w $* $(QUIET); \
 	then \
-		docker exec -it ${COMPOSE_PROJECT_NAME}-$* $(DOCKER_SHELL); \
+		docker exec -it $* $(DOCKER_SHELL); \
 	else \
 		echo "image 'shell-$*' not found"; \
 	fi
@@ -96,5 +123,18 @@ re: fclean all
 
 prune:
 	docker system prune
+
+env:
+	@FILE="";\
+	for ENV in $(REQUIRED_ENVS); do \
+		VALUE=`grep "^$$ENV=" $(PROJECT_DIRECTORY)/.env | cut -d '=' -f2-`; \
+		FILE="$$FILE$$ENV=$$VALUE\n"; \
+		if [[ $$VALUE ]]; then \
+			echo "$(shell tput setaf 2)$$ENV=$$VALUE$(shell tput sgr0)"; \
+		else \
+			echo "$(shell tput setaf 1)$$ENV=$(shell tput sgr0)"; \
+		fi; \
+	done; \
+	echo -e $$FILE > teste
 
 .PHONY: all up stop start restart down logs build ps shell-% bonus clean fclean re prune

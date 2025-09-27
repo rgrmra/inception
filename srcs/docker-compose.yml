@@ -20,7 +20,7 @@ secrets:
 
 services:
   mariadb:
-    container_name: ${COMPOSE_PROJECT_NAME}-mariadb
+    container_name: mariadb
     expose:
       - ${MARIADB_PORT}
     healthcheck:
@@ -55,7 +55,7 @@ services:
     restart: on-failure
 
   wordpress:
-    container_name: ${COMPOSE_PROJECT_NAME}-wordpress
+    container_name: wordpress
     expose:
       - ${WORDPRESS_PORT}
     build:
@@ -91,7 +91,7 @@ services:
         condition: service_healthy
 
   nginx:
-    container_name: ${COMPOSE_PROJECT_NAME}-nginx
+    container_name: nginx
     expose:
       - ${NGINX_PORT}
     build:
@@ -118,7 +118,7 @@ services:
         condition: service_started
 
   redis:
-    container_name: ${COMPOSE_PROJECT_NAME}
+    container_name: redis
     expose:
       - ${REDIS_PORT}
     build:
@@ -140,7 +140,7 @@ services:
     restart: on-failure
 
   vsftpd:
-    container_name: ${COMPOSE_PROJECT_NAME}-vsftpd
+    container_name: vsftpd
     expose:
       - ${VSFTPD_PORT}
       - ${VSFTPD_PORT_RANGE}
@@ -167,7 +167,7 @@ services:
       - wordpress
 
   static_site:
-    container_name: ${COMPOSE_PROJECT_NAME}-static_site
+    container_name: static_site
     expose:
       - ${STATIC_SITE_PORT}
     build:
@@ -182,7 +182,7 @@ services:
     restart: on-failure
 
   adminer:
-    container_name: ${COMPOSE_PROJECT_NAME}-adminer
+    container_name: adminer
     expose:
       - ${ADMINER_PORT}
     build:
@@ -202,7 +202,7 @@ services:
   cadvisor:
     container_name: cadvisor
     expose:
-      - 8080
+      - ${CADVISOR_PORT}
     build:
       context: ./requirements/bonus/cadvisor
       dockerfile: Dockerfile
@@ -215,7 +215,7 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk:/dev/disk:ro
     ports:
-      - 9000:8080
+      - ${CADVISOR_PORT}:${CADVISOR_PORT}
     restart: on-failure
     depends_on:
       - mariadb
