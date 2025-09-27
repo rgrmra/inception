@@ -1,13 +1,20 @@
 FROM alpine:3.21
 
+
+
 RUN apk add --no-cache \
-    nodejs \
-    npm
+	python3 \
+	py3-pip
 
 WORKDIR /run/static_site
 
-COPY ./tools .
+COPY ./tools ./
 
-RUN npm init -y && npm install express -y
+RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
-CMD ["node", "server.js"]
+RUN mv docker-entrypoint.sh entrypoint.sh
+
+RUN chmod +x entrypoint.sh
+
+CMD [ "/run/static_site/entrypoint.sh" ]
+

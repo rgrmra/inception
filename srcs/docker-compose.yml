@@ -15,8 +15,8 @@ secrets:
   wordpress_root_password:
     file: ../secrets/wordpress_root_password.txt
 
-  vsftpd_password:
-    file: ../secrets/vsftpd_password.txt
+  vsftpd_user_password:
+    file: ../secrets/vsftpd_user_password.txt
 
 services:
   mariadb:
@@ -155,7 +155,7 @@ services:
       VSFTPD_PORT_START_RANGE: ${VSFTPD_PORT_START_RANGE}
       VSFTPD_PORT_END_RANGE: ${VSFTPD_PORT_END_RANGE}
     secrets:
-      - vsftpd_password
+      - vsftpd_user_password
     networks:
       - ${COMPOSE_PROJECT_NAME}
     ports:
@@ -176,6 +176,8 @@ services:
       dockerfile: Dockerfile
       args:
         STATIC_SITE_PORT: ${STATIC_SITE_PORT}
+    environment:
+      STATIC_SITE_PORT: ${STATIC_SITE_PORT}
     networks:
       - ${COMPOSE_PROJECT_NAME}
     ports:
